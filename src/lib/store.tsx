@@ -1,0 +1,183 @@
+'use client';
+
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { Project, Bid, Escrow, Transaction, EscrowState } from './types';
+import { mockProjects, mockEscrows, mockTransactions } from './mock-data';
+
+interface AppStore {
+  projects: Project[];
+  escrows: Escrow[];
+  transactions: Transaction[];
+  addProject: (project: Project) => void;
+  addBid: (projectId: string, bid: Bid) => void;
+  acceptBid: (projectId: string, bidId: string) => void;
+  updateEscrowState: (escrowId: string, state: EscrowState) => void;
+  approveMilestone: (escrowId: string, milestoneId: string) => void;
+  completeMilestone: (escrowId: string, milestoneId: string, evidenceUrl: string) => void;
+}
+
+const StoreContext = createContext<AppStore | null>(null);
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  const [projects, setProjects] = useState<Project[]>(mockProjects);
+  const [escrows, setEscrows] = useState<Escrow[]>(mockEscrows);
+  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+
+  const addProject = useCallback((project: Project) => {
+    setProjects(prev => [project, ...prev]);
+    const tx: Transaction = {
+      id: `tx-${Date.now()}`,
+      type: 'ProjectCreated',
+      projectId: project.id,
+      projectTitle: project.title,
+      fromAddress: project.clientAddress,
+      txHash: `0x${Math.random().toString(16).slice(2, 14)}...${Math.random().toString(16).slice(2, 8)}`,
+      blockNumber: 18300000 + Math.floor(Math.random() * 10000),
+      timestamp: new Date().toISOString(),
+      details: `New project posted: ${project.title} (${project.budget} ETH budget)`,
+    };
+    setTransactions(prev => [tx, ...prev]);
+  }, []);
+
+  const addBid = useCallback((projectId: string, bid: Bid) => {
+    setProjects(prev =>
+      prev.map(p =>
+        p.id === projectId ? { ...p, bids: [...p.bids, bid] } : p
+      )
+    );
+  }, []);
+
+  const acceptBid = useCallback((projectId: string, bidId: string) => {
+    setProjects(prev =>
+      prev.map(p => {
+        if (p.id !== projectId) return p;
+        const acceptedBid = p.bids.find(b => b.id === bidId);
+        if (!acceptedBid) return p;
+        return {
+          ...p,
+          status: 'in_progress' as const,
+          freelancerAddress: acceptedBid.freelancerAddress,
+          bids: p.bids.map(b => ({
+            ...b,
+            status: b.id === bidId ? 'accepted' as const : 'rejected' as const,
+          })),
+          escrowId: `esc-${Date.now()}`,
+        };
+      })
+    );
+
+    const project = projects.find(p => p.id === projectId);
+    const bid = project?.bids.find(b => b.id === bidId);
+    if (project && bid) {
+      const newEscrow: Escrow = {
+        id: `esc-${Date.now()}`,
+        projectId,
+        projectTitle: project.title,
+        clientAddress: project.clientAddress,
+        freelancerAddress: bid.freelancerAddress,
+        totalAmount: bid.amount,
+        state: EscrowState.Funded,
+        milestones: project.milestones,
+        contractAddress: `0x${Math.random().toString(16).slice(2, 14)}`,
+        createdAt: new Date().toISOString(),
+        fundedAt: new Date().toISOString(),
+      };
+      setEscrows(prev => [newEscrow, ...prev]);
+
+      const tx: Transaction = {
+        id: `tx-${Date.now()}`,
+        type: 'EscrowDeployed',
+        projectId,
+        projectTitle: project.title,
+        fromAddress: project.clientAddress,
+        txHash: `0x${Math.random().toString(16).slice(2, 14)}...${Math.random().toString(16).slice(2, 8)}`,
+        blockNumber: 18300000 + Math.floor(Math.random() * 10000),
+        timestamp: new Date().toISOString(),
+        details: `Escrow deployed and funded with ${bid.amount} ETH for ${project.title}`,
+      };
+      setTransactions(prev => [tx, ...prev]);
+    }
+  }, [projects]);
+
+  const updateEscrowState = useCallback((escrowId: string, state: EscrowState) => {
+    setEscrows(prev =>
+      prev.map(e => (e.id === escrowId ? { ...e, state } : e))
+    );
+  }, []);
+
+  const approveMilestone = useCallback((escrowId: string, milestoneId: string) => {
+    setEscrows(prev =>
+      prev.map(e => {
+        if (e.id !== escrowId) return e;
+        const updatedMilestones = e.milestones.map(m =>
+          m.id === milestoneId ? { ...m, approved: true } : m
+        );
+        const allApproved = updatedMilestones.every(m => m.approved);
+        return {
+          ...e,
+          milestones: updatedMilestones,
+          state: allApproved ? EscrowState.Completed : e.state,
+          completedAt: allApproved ? new Date().toISOString() : e.completedAt,
+        };
+      })
+    );
+
+    const escrow = escrows.find(e => e.id === escrowId);
+    const milestone = escrow?.milestones.find(m => m.id === milestoneId);
+    if (escrow && milestone) {
+      const tx: Transaction = {
+        id: `tx-${Date.now()}`,
+        type: 'MilestoneApproved',
+        projectId: escrow.projectId,
+        projectTitle: escrow.projectTitle,
+        fromAddress: escrow.clientAddress,
+        toAddress: escrow.freelancerAddress,
+        amount: milestone.amount,
+        txHash: `0x${Math.random().toString(16).slice(2, 14)}...${Math.random().toString(16).slice(2, 8)}`,
+        blockNumber: 18300000 + Math.floor(Math.random() * 10000),
+        timestamp: new Date().toISOString(),
+        details: `Milestone "${milestone.title}" approved — ${milestone.amount} ETH released`,
+      };
+      setTransactions(prev => [tx, ...prev]);
+    }
+  }, [escrows]);
+
+  const completeMilestone = useCallback((escrowId: string, milestoneId: string, evidenceUrl: string) => {
+    setEscrows(prev =>
+      prev.map(e => {
+        if (e.id !== escrowId) return e;
+        return {
+          ...e,
+          state: EscrowState.UnderReview,
+          milestones: e.milestones.map(m =>
+            m.id === milestoneId ? { ...m, completed: true, evidenceUrl } : m
+          ),
+        };
+      })
+    );
+  }, []);
+
+  return (
+    <StoreContext.Provider
+      value={{
+        projects,
+        escrows,
+        transactions,
+        addProject,
+        addBid,
+        acceptBid,
+        updateEscrowState,
+        approveMilestone,
+        completeMilestone,
+      }}
+    >
+      {children}
+    </StoreContext.Provider>
+  );
+}
+
+export function useStore(): AppStore {
+  const ctx = useContext(StoreContext);
+  if (!ctx) throw new Error('useStore must be used within StoreProvider');
+  return ctx;
+}
