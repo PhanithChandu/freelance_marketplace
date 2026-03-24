@@ -10,7 +10,7 @@ import { ethers } from 'ethers';
 // ============================================================
 // DEPLOYED CONTRACT ADDRESS — UPDATE AFTER DEPLOYMENT
 // ============================================================
-export const ESCROW_FACTORY_ADDRESS = '0x0000000000000000000000000000000000000000'; // TODO: replace after deploy
+export const ESCROW_FACTORY_ADDRESS = '0x8e3143a0C0F01a449D7eccc150cb224733735197';
 
 // ============================================================
 // ABIs (minimal — only the functions we call from the frontend)
