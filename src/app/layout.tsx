@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { StoreProvider } from "@/lib/store";
+import { WalletProvider } from "@/lib/WalletProvider";
 
 export const metadata: Metadata = {
   title: "TrustChain — Trustless Freelance Marketplace",
@@ -25,10 +26,12 @@ export default function RootLayout({
         />
       </head>
       <body style={{ minHeight: '100vh' }}>
-        <StoreProvider>
-          <Navbar />
-          <main>{children}</main>
-        </StoreProvider>
+        <WalletProvider>
+          <StoreProvider>
+            <Navbar />
+            <main>{children}</main>
+          </StoreProvider>
+        </WalletProvider>
       </body>
     </html>
   );

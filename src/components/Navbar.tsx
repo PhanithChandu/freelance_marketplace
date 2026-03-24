@@ -2,8 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Briefcase, LayoutDashboard, FolderPlus, ArrowLeftRight, Shield, Menu, X } from 'lucide-react';
+import { Briefcase, LayoutDashboard, FolderPlus, ArrowLeftRight, Shield, Menu, X, LogOut, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useWallet, shortenAddress } from '@/lib/WalletProvider';
+
+const CHAIN_NAMES: Record<string, string> = {
+  '0x1': 'Mainnet',
+  '0xaa36a7': 'Sepolia',
+  '0x5': 'Goerli',
+  '0x89': 'Polygon',
+  '0x13881': 'Mumbai',
+  '0xa4b1': 'Arbitrum',
+  '0xa': 'Optimism',
+};
 
 const navLinks = [
   { href: '/projects', label: 'Browse Projects', icon: Briefcase },
@@ -15,6 +26,9 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { address, chainId, isConnecting, error, connect, disconnect } = useWallet();
+
+  const networkName = chainId ? (CHAIN_NAMES[chainId] || `Chain ${parseInt(chainId, 16)}`) : null;
 
   return (
     <nav style={{
@@ -93,25 +107,86 @@ export default function Navbar() {
 
         {/* Wallet Display */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            padding: '6px 12px',
-            borderRadius: 8,
-            background: 'rgba(0, 206, 201, 0.1)',
-            border: '1px solid rgba(0, 206, 201, 0.2)',
-            fontSize: 12,
-            color: 'var(--color-accent-teal-light)',
-            fontWeight: 500,
-            display: 'none',
-          }} className="network-badge">
-            Sepolia
-          </div>
-          <button
-            className="btn-primary"
-            style={{ padding: '8px 20px', fontSize: 13 }}
-          >
-            <Shield size={14} />
-            Connect Wallet
-          </button>
+          {/* Network Badge — only show when wallet is connected */}
+          {address && networkName && (
+            <div style={{
+              padding: '6px 12px',
+              borderRadius: 8,
+              background: 'rgba(0, 206, 201, 0.1)',
+              border: '1px solid rgba(0, 206, 201, 0.2)',
+              fontSize: 12,
+              color: 'var(--color-accent-teal-light)',
+              fontWeight: 500,
+            }} className="network-badge">
+              {networkName}
+            </div>
+          )}
+
+          {address ? (
+            /* Connected State */
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{
+                padding: '8px 16px',
+                borderRadius: 10,
+                background: 'rgba(108, 92, 231, 0.15)',
+                border: '1px solid rgba(108, 92, 231, 0.3)',
+                fontSize: 13,
+                color: 'var(--color-accent-purple-light)',
+                fontWeight: 500,
+                fontFamily: 'var(--font-mono, "JetBrains Mono", monospace)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                <div style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: '#00CE7D',
+                  boxShadow: '0 0 6px rgba(0, 206, 125, 0.6)',
+                }} />
+                {shortenAddress(address)}
+              </div>
+              <button
+                onClick={disconnect}
+                title="Disconnect wallet"
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 10,
+                  background: 'rgba(255, 71, 87, 0.1)',
+                  border: '1px solid rgba(255, 71, 87, 0.2)',
+                  color: '#FF4757',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
+          ) : (
+            /* Disconnected State */
+            <button
+              className="btn-primary"
+              onClick={connect}
+              disabled={isConnecting}
+              style={{
+                padding: '8px 20px',
+                fontSize: 13,
+                opacity: isConnecting ? 0.7 : 1,
+                cursor: isConnecting ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {isConnecting ? (
+                <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+              ) : (
+                <Shield size={14} />
+              )}
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+            </button>
+          )}
 
           {/* Mobile toggle */}
           <button
@@ -129,6 +204,20 @@ export default function Navbar() {
           </button>
         </div>
       </div>
+
+      {/* Error Toast */}
+      {error && (
+        <div style={{
+          padding: '10px 24px',
+          background: 'rgba(255, 71, 87, 0.1)',
+          borderTop: '1px solid rgba(255, 71, 87, 0.2)',
+          color: '#FF4757',
+          fontSize: 13,
+          textAlign: 'center',
+        }}>
+          {error}
+        </div>
+      )}
 
       {/* Mobile Menu */}
       {mobileOpen && (
@@ -169,6 +258,10 @@ export default function Navbar() {
       )}
 
       <style jsx>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-toggle { display: block !important; }
