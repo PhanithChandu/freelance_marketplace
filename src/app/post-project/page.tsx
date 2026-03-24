@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
+import { useWallet } from '@/lib/WalletProvider';
 import { Project, Milestone, ProjectCategory } from '@/lib/types';
 import { FolderPlus, Plus, Trash2, CheckCircle, ArrowRight, DollarSign } from 'lucide-react';
 
 export default function PostProjectPage() {
   const router = useRouter();
   const { addProject } = useStore();
+  const { address, connect } = useWallet();
 
   const [step, setStep] = useState(1);
   const [title, setTitle] = useState('');
@@ -32,7 +34,12 @@ export default function PostProjectPage() {
     setMilestones(milestones.map((m, i) => i === idx ? { ...m, [field]: value } : m));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!address) {
+      await connect();
+      return;
+    }
+
     const projectMilestones: Milestone[] = milestones.map((m, i) => ({
       id: `ms-new-${Date.now()}-${i}`,
       title: m.title,
@@ -49,7 +56,7 @@ export default function PostProjectPage() {
       category,
       budget: parseFloat(budget) || 0,
       milestones: projectMilestones,
-      clientAddress: '0xYOUR...WALLET',
+      clientAddress: address,
       status: 'open',
       createdAt: new Date().toISOString(),
       deadline: new Date(deadline).toISOString(),

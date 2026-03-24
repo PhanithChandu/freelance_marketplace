@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
+import { useWallet } from '@/lib/WalletProvider';
 import { useState } from 'react';
 import { ArrowLeft, DollarSign, Clock, Users, CheckCircle, Circle, Send, Briefcase, Calendar, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
@@ -10,6 +11,7 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { projects, addBid, acceptBid } = useStore();
+  const { address, connect } = useWallet();
   const project = projects.find(p => p.id === params.id);
 
   const [bidAmount, setBidAmount] = useState('');
@@ -27,12 +29,16 @@ export default function ProjectDetailPage() {
     );
   }
 
-  const handleSubmitBid = () => {
+  const handleSubmitBid = async () => {
+    if (!address) {
+      await connect();
+      return;
+    }
     if (!bidAmount || !bidTimeline || !bidMessage) return;
     const newBid = {
       id: `bid-${Date.now()}`,
       projectId: project.id,
-      freelancerAddress: '0xYOUR...ADDR',
+      freelancerAddress: address,
       amount: parseFloat(bidAmount),
       timeline: parseInt(bidTimeline),
       message: bidMessage,
