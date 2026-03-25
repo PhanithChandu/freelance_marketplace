@@ -126,15 +126,15 @@ export default function HomePage() {
           </p>
 
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/projects" style={{ textDecoration: 'none' }}>
+            <Link href="/login" style={{ textDecoration: 'none' }}>
               <button className="btn-primary" style={{ padding: '14px 32px', fontSize: 16 }}>
-                Browse Projects
+                Get Started
                 <ArrowRight size={18} />
               </button>
             </Link>
-            <Link href="/post-project" style={{ textDecoration: 'none' }}>
+            <Link href="/login" style={{ textDecoration: 'none' }}>
               <button className="btn-secondary" style={{ padding: '14px 32px', fontSize: 16 }}>
-                Post a Project
+                I&apos;m a Designer
               </button>
             </Link>
           </div>
@@ -328,9 +328,9 @@ export default function HomePage() {
             Join thousands of developers and clients using smart contracts
             to make freelancing fair and transparent.
           </p>
-          <Link href="/projects" style={{ textDecoration: 'none' }}>
+          <Link href="/login" style={{ textDecoration: 'none' }}>
             <button className="btn-primary" style={{ padding: '14px 36px', fontSize: 16 }}>
-              Explore the Marketplace
+              Get Started Now
               <ArrowRight size={18} />
             </button>
           </Link>

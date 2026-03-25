@@ -6,6 +6,7 @@ import { useStore } from '@/lib/store';
 import { useWallet } from '@/lib/WalletProvider';
 import { Project, Milestone, ProjectCategory } from '@/lib/types';
 import { FolderPlus, Plus, Trash2, CheckCircle, ArrowRight, DollarSign } from 'lucide-react';
+import RouteGuard from '@/components/RouteGuard';
 
 export default function PostProjectPage() {
   const router = useRouter();
@@ -69,7 +70,7 @@ export default function PostProjectPage() {
 
   const totalMilestoneAmount = milestones.reduce((s, m) => s + (parseFloat(m.amount) || 0), 0);
 
-  return (
+  const content = (
     <div className="page-container" style={{ maxWidth: 720, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
@@ -397,4 +398,5 @@ export default function PostProjectPage() {
       )}
     </div>
   );
+  return <RouteGuard allowedRoles={['designer']}>{content}</RouteGuard>;
 }

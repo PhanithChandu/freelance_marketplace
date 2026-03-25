@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { StoreProvider } from "@/lib/store";
 import { WalletProvider } from "@/lib/WalletProvider";
+import { RoleProvider } from "@/lib/RoleProvider";
 
 export const metadata: Metadata = {
   title: "TrustChain — Trustless Freelance Marketplace",
@@ -27,12 +28,15 @@ export default function RootLayout({
       </head>
       <body style={{ minHeight: '100vh' }}>
         <WalletProvider>
-          <StoreProvider>
-            <Navbar />
-            <main>{children}</main>
-          </StoreProvider>
+          <RoleProvider>
+            <StoreProvider>
+              <Navbar />
+              <main>{children}</main>
+            </StoreProvider>
+          </RoleProvider>
         </WalletProvider>
       </body>
     </html>
   );
 }
+

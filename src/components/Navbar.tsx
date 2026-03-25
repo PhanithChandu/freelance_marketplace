@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Briefcase, LayoutDashboard, FolderPlus, ArrowLeftRight, Shield, Menu, X, LogOut, Loader2 } from 'lucide-react';
+import { Briefcase, LayoutDashboard, FolderPlus, ArrowLeftRight, Shield, Menu, X, LogOut, Loader2, UserCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useWallet, shortenAddress } from '@/lib/WalletProvider';
+import { useRole } from '@/lib/RoleProvider';
 
 const CHAIN_NAMES: Record<string, string> = {
   '0x1': 'Mainnet',
@@ -16,19 +17,44 @@ const CHAIN_NAMES: Record<string, string> = {
   '0xa': 'Optimism',
 };
 
-const navLinks = [
+const clientLinks = [
   { href: '/projects', label: 'Browse Projects', icon: Briefcase },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/post-project', label: 'Post Project', icon: FolderPlus },
   { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+];
+
+const designerLinks = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/post-project', label: 'Post Project', icon: FolderPlus },
+  { href: '/projects', label: 'Browse Projects', icon: Briefcase },
+  { href: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+];
+
+const defaultLinks = [
+  { href: '/login', label: 'Get Started', icon: UserCircle },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { address, chainId, isConnecting, error, connect, disconnect } = useWallet();
+  const { role, clearRole } = useRole();
 
   const networkName = chainId ? (CHAIN_NAMES[chainId] || `Chain ${parseInt(chainId, 16)}`) : null;
+
+  // Choose nav links based on role
+  const navLinks = role === 'client' ? clientLinks : role === 'designer' ? designerLinks : defaultLinks;
+
+  const handleDisconnect = () => {
+    clearRole();
+    disconnect();
+  };
+
+  const roleBadge = role === 'client'
+    ? { label: 'Client', color: 'var(--color-accent-blue)', bg: 'rgba(116, 185, 255, 0.1)', border: 'rgba(116, 185, 255, 0.25)' }
+    : role === 'designer'
+      ? { label: 'Designer', color: 'var(--color-accent-purple-light)', bg: 'rgba(108, 92, 231, 0.1)', border: 'rgba(108, 92, 231, 0.25)' }
+      : null;
 
   return (
     <nav style={{
@@ -105,9 +131,28 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Wallet Display */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Network Badge — only show when wallet is connected */}
+        {/* Wallet + Role Display */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Role Badge */}
+          {roleBadge && address && (
+            <Link href="/login" style={{ textDecoration: 'none' }}>
+              <div style={{
+                padding: '5px 12px',
+                borderRadius: 8,
+                background: roleBadge.bg,
+                border: `1px solid ${roleBadge.border}`,
+                fontSize: 12,
+                color: roleBadge.color,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }} className="role-badge">
+                {roleBadge.label}
+              </div>
+            </Link>
+          )}
+
+          {/* Network Badge */}
           {address && networkName && (
             <div style={{
               padding: '6px 12px',
@@ -148,7 +193,7 @@ export default function Navbar() {
                 {shortenAddress(address)}
               </div>
               <button
-                onClick={disconnect}
+                onClick={handleDisconnect}
                 title="Disconnect wallet"
                 style={{
                   padding: '8px 10px',
@@ -168,24 +213,18 @@ export default function Navbar() {
             </div>
           ) : (
             /* Disconnected State */
-            <button
-              className="btn-primary"
-              onClick={connect}
-              disabled={isConnecting}
-              style={{
-                padding: '8px 20px',
-                fontSize: 13,
-                opacity: isConnecting ? 0.7 : 1,
-                cursor: isConnecting ? 'not-allowed' : 'pointer',
-              }}
-            >
-              {isConnecting ? (
-                <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-              ) : (
+            <Link href="/login" style={{ textDecoration: 'none' }}>
+              <button
+                className="btn-primary"
+                style={{
+                  padding: '8px 20px',
+                  fontSize: 13,
+                }}
+              >
                 <Shield size={14} />
-              )}
-              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-            </button>
+                Get Started
+              </button>
+            </Link>
           )}
 
           {/* Mobile toggle */}
@@ -266,6 +305,7 @@ export default function Navbar() {
           .desktop-nav { display: none !important; }
           .mobile-toggle { display: block !important; }
           .network-badge { display: none !important; }
+          .role-badge { display: none !important; }
         }
         @media (min-width: 769px) {
           .mobile-menu { display: none !important; }
