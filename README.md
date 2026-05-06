@@ -1,23 +1,21 @@
-# TrustChain — Trustless Freelance Marketplace
+# DAA Arcade 🎮
 
-> A decentralized freelance marketplace where smart contract escrows protect both clients and freelancers. Every payment is transparent, every milestone is verified.
+> An interactive mini-game collection to learn **Design & Analysis of Algorithms** through visuals and hands-on play. Pick a module, tweak the inputs, and watch the algorithm work — step by step.
 
-🔗 **Live Demo:** [freelance-marketplace-sand.vercel.app](https://freelance-marketplace-sand.vercel.app/)  
-🌐 **Network:** Ethereum Sepolia Testnet
+🔗 **Live Demo:** [daa-arcade.vercel.app](https://daa-arcade.vercel.app)  
+📦 **Tech:** React · TypeScript · Vite · Tailwind CSS
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
-- [How It Works](#how-it-works)
+- [Games & Algorithms](#games--algorithms)
+- [Project Structure](#project-structure)
 - [Tech Stack](#tech-stack)
-- [Smart Contract Architecture](#smart-contract-architecture)
-- [Pages & Modules](#pages--modules)
 - [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Deployment](#deployment)
+- [Build & Preview](#build--preview)
+- [Algorithms Reference](#algorithms-reference)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -25,108 +23,96 @@
 
 ## Overview
 
-TrustChain eliminates the trust problem in freelancing. Instead of relying on a centralized platform to hold funds and adjudicate disputes, TrustChain deploys a dedicated smart contract escrow for every project. Clients lock payment into the contract; funds are only released when milestones are approved — no banks, no middlemen, no delays.
+DAA Arcade turns abstract algorithm concepts into interactive, visual experiences. Each game module targets a core topic from Design & Analysis of Algorithms — graph traversal, dynamic programming, greedy methods, backtracking, and more — and visualises how the algorithm thinks its way to a solution.
 
-Built on Ethereum (Sepolia testnet), the platform is fully transparent: every escrow deployment, milestone approval, and payment release is recorded on-chain and verifiable by anyone.
-
----
-
-## Features
-
-- **Wallet-based authentication** — No sign-up form. Connect with MetaMask or any injected wallet. Your public address is your identity.
-- **Project lifecycle management** — Post projects with title, description, budget (ETH), deadline, category, and milestone breakdown.
-- **Bid & proposal system** — Freelancers browse open listings and submit price/timeline proposals. Clients review bids and select the best fit.
-- **Per-project escrow contracts** — When a freelancer is selected, a new `Escrow.sol` instance is deployed via `EscrowFactory.sol` with the agreed terms baked in.
-- **Milestone-gated payments** — Funds release only when the client approves a milestone. Partial payments are supported per milestone.
-- **On-chain transaction history** — Every event (project created, escrow deployed, milestone approved, payment released) is indexed and displayed with a direct Etherscan deep-link.
-- **Dispute mechanism** — Either party can raise a dispute, triggering a community arbitration path.
-- **Decentralized file storage** — Evidence and deliverables are uploaded to IPFS; only the content hash is stored on-chain.
+No API keys. No backend. Just run it locally and start learning.
 
 ---
 
-## How It Works
+## Games & Algorithms
+
+### 🗺️ Shortest Path Maze — Dijkstra's Algorithm
+`src/games/Pathfinding.tsx` · `src/logic/shortestPath.ts`
+
+Build or modify a maze with weighted terrain and watch Dijkstra's algorithm compute the optimal path from source to destination in real time. Demonstrates greedy shortest-path selection and priority queue mechanics.
+
+---
+
+### 🎒 Knapsack Ops — 0/1 Knapsack (Dynamic Programming)
+`src/games/Knapsack.tsx` · `src/logic/knapsack.ts`
+
+Choose items with different weights and values, set a capacity limit, and visualise the dynamic programming table being filled row by row. Understand how optimal substructure and overlapping subproblems lead to the best selection.
+
+---
+
+### ⚔️ Sorting Warriors — Sorting Algorithms & Complexity
+`src/games/Sorting.tsx` · `src/logic/sorting.ts`
+
+Compare sorting strategies side by side — Bubble Sort, Quick Sort, and more — as they operate on the same input array. Builds intuition for time complexity differences through direct visual comparison.
+
+---
+
+### 🌐 Prime Network — Minimum Spanning Tree (Prim's Algorithm)
+`src/games/MST.tsx` · `src/logic/mst.ts`
+
+Connect a set of nodes at the minimum possible total edge cost. Watch Prim's algorithm grow the spanning tree one edge at a time, illustrating greedy selection and the cut property of MSTs.
+
+---
+
+### 📡 Huffman Morse — Huffman Coding (Greedy)
+`src/games/Huffman.tsx` · `src/logic/huffman.ts`
+
+Enter a string and watch a Huffman tree get built from the character frequency table. Observe how the greedy merging of least-frequent nodes produces an optimal prefix-free code and compresses the input.
+
+---
+
+### 👑 The N-Queens Defense — Backtracking
+`src/games/NQueens.tsx` · `src/logic/nqueens.ts`
+
+Place N queens on an N×N chessboard so that no two queens threaten each other. The visualiser steps through every placement attempt and backtrack, making the search tree and constraint propagation tangible.
+
+---
+
+## Project Structure
 
 ```
-1. Client posts a project → defines milestones and total ETH budget
-2. Freelancers browse listings → submit bids with price and timeline
-3. Client selects a freelancer → EscrowFactory deploys a new Escrow contract
-4. Client funds the escrow → ETH is locked in the contract
-5. Freelancer completes milestone → submits evidence (IPFS link)
-6. Client reviews and approves → releasePayment() is called → ETH sent to freelancer
+DAA-ARCADE/
+├── src/
+│   ├── games/                  # React UI components — one per algorithm game
+│   │   ├── Pathfinding.tsx     # Dijkstra maze game
+│   │   ├── Knapsack.tsx        # 0/1 Knapsack DP game
+│   │   ├── Sorting.tsx         # Sorting comparison game
+│   │   ├── MST.tsx             # Prim's MST game
+│   │   ├── Huffman.tsx         # Huffman coding game
+│   │   └── NQueens.tsx         # N-Queens backtracking game
+│   └── logic/                  # Pure algorithm implementations (no UI)
+│       ├── shortestPath.ts     # Dijkstra's algorithm
+│       ├── knapsack.ts         # 0/1 Knapsack dynamic programming
+│       ├── sorting.ts          # Sorting algorithm suite
+│       ├── mst.ts              # Prim's minimum spanning tree
+│       ├── huffman.ts          # Huffman tree construction
+│       └── nqueens.ts          # N-Queens backtracking solver
+├── index.html
+├── metadata.json
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
 ```
+
+The architecture keeps algorithm logic strictly separated from the UI layer — `src/logic/` contains pure TypeScript functions with no React dependencies, making them independently testable and reusable.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
+| Tool | Purpose |
 |---|---|
-| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS |
-| Web3 / Wallet | wagmi v2, viem, ConnectKit |
-| Smart Contracts | Solidity ^0.8.x, Hardhat, OpenZeppelin |
-| File Storage | IPFS via web3.storage |
-| Off-chain Data | Supabase (bids, project metadata) |
-| Event Indexing | The Graph / ethers.js contract event logs |
-| RPC Provider | Alchemy |
-| Deployment | Vercel (frontend), Sepolia testnet (contracts) |
-
----
-
-## Smart Contract Architecture
-
-```
-contracts/
-├── EscrowFactory.sol     # Deploys a new Escrow instance per project
-├── Escrow.sol            # Holds funds, manages milestones, handles release
-└── interfaces/
-    └── IArbitration.sol  # Optional dispute/arbitration interface
-```
-
-### Key contract functions
-
-```solidity
-// EscrowFactory
-function deployEscrow(address freelancer, Milestone[] calldata milestones) external payable returns (address);
-
-// Escrow
-function fundEscrow() external payable;
-function approveMilestone(uint256 milestoneId) external;
-function releasePayment() external;
-function raiseDispute() external;
-function refund() external;
-```
-
-### Escrow lifecycle states
-
-```
-AWAITING_DEPOSIT → FUNDED → IN_PROGRESS → UNDER_REVIEW → RELEASED
-                                                        ↘ DISPUTED
-```
-
----
-
-## Pages & Modules
-
-### `/` — Landing page
-Hero section with platform stats (projects posted, ETH in escrow, active freelancers, success rate) and a walkthrough of the four-step flow.
-
-### `/projects` — Browse projects
-Filterable listing of all open projects. Filters include category (Web Development, Smart Contracts, Design, Data Science, etc.), status (Open / In Progress / Completed), and budget range. Each card shows title, budget in ETH, milestone count, bid count, and deadline.
-
-### `/projects/[id]` — Project detail
-Full project description, milestone breakdown, and the bid submission form for freelancers. Clients see incoming bids and can select a freelancer to trigger contract deployment.
-
-### `/post-project` — Post a project
-A three-step form: (1) project details — title, description, category, total budget, deadline; (2) milestone definition — title and ETH amount per milestone; (3) review and submit.
-
-### `/dashboard` — Client & freelancer dashboard
-Overview stats (total projects, open projects, active escrows, total value). Displays active escrow cards with milestone progress bars and wallet addresses, plus a full list of the connected wallet's projects.
-
-### `/escrow/[id]` — Escrow detail
-Visualises the escrow state machine. Shows locked funds, milestone checklist, freelancer-submitted evidence links, and the **Release Payment** button that calls `releasePayment()` on the contract.
-
-### `/transactions` — On-chain audit trail
-A live feed of all contract events — `ProjectCreated`, `EscrowDeployed`, `EscrowFunded`, `MilestoneApproved`, `PaymentReleased`, `DisputeRaised` — each with a transaction hash, block number, timestamp, and Etherscan link.
+| React + TypeScript | Component UI and type-safe algorithm logic |
+| Vite | Fast dev server and optimised production bundler |
+| Tailwind CSS | Utility-first styling |
+| Motion | Step-by-step algorithm animations |
+| Lucide React | Icon set |
 
 ---
 
@@ -134,122 +120,74 @@ A live feed of all contract events — `ProjectCreated`, `EscrowDeployed`, `Escr
 
 ### Prerequisites
 
-- Node.js 18+
-- A browser wallet (MetaMask recommended)
-- Sepolia testnet ETH — get some from [sepoliafaucet.com](https://sepoliafaucet.com)
+- **Node.js** — current LTS version recommended ([nodejs.org](https://nodejs.org))
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/trustchain.git
-cd trustchain
+git clone https://github.com/PhanithChandu/DAA-ARCADE.git
+cd DAA-ARCADE
 
 # Install dependencies
 npm install
 
-# Copy environment variables
-cp .env.example .env.local
-
-# Run the development server
+# Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser and connect your wallet.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Compile & deploy contracts (local)
+> No API keys or environment variables are required. The app runs entirely client-side.
+
+---
+
+## Build & Preview
 
 ```bash
-# Install Hardhat dependencies
-cd contracts
-npm install
+# Create an optimised production build
+npm run build
 
-# Compile
-npx hardhat compile
-
-# Run tests
-npx hardhat test
-
-# Deploy to Sepolia
-npx hardhat run scripts/deploy.js --network sepolia
+# Serve the production build locally to verify it
+npm run preview
 ```
+
+The `dist/` folder contains the production-ready static output, deployable to any static host — Vercel, Netlify, GitHub Pages, etc.
 
 ---
 
-## Environment Variables
+## Algorithms Reference
 
-Create a `.env.local` file in the project root:
-
-```env
-# Alchemy RPC
-NEXT_PUBLIC_ALCHEMY_API_KEY=your_alchemy_api_key
-
-# Deployed contract addresses (Sepolia)
-NEXT_PUBLIC_ESCROW_FACTORY_ADDRESS=0x...
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# IPFS / web3.storage
-WEB3_STORAGE_TOKEN=your_web3_storage_token
-
-# The Graph
-NEXT_PUBLIC_SUBGRAPH_URL=https://api.thegraph.com/subgraphs/name/your-subgraph
-```
-
----
-
-## Deployment
-
-The frontend is deployed to **Vercel**. Smart contracts are live on the **Ethereum Sepolia testnet**.
-
-To deploy your own instance:
-
-1. Push the repository to GitHub
-2. Import the project on [vercel.com](https://vercel.com)
-3. Add all environment variables in the Vercel dashboard
-4. Deploy — Vercel auto-deploys on every push to `main`
-
----
-
-## Project Structure
-
-```
-trustchain/
-├── app/                    # Next.js App Router pages
-│   ├── page.tsx            # Landing page
-│   ├── projects/           # Browse & project detail
-│   ├── post-project/       # Multi-step post form
-│   ├── dashboard/          # Client/freelancer dashboard
-│   ├── escrow/[id]/        # Escrow detail & release
-│   └── transactions/       # On-chain audit trail
-├── components/             # Shared UI components
-├── contracts/              # Solidity source & Hardhat config
-│   ├── EscrowFactory.sol
-│   ├── Escrow.sol
-│   └── interfaces/
-├── lib/                    # wagmi config, contract ABIs, helpers
-├── public/                 # Static assets
-└── README.md
-```
+| Module | Algorithm | Paradigm | Time Complexity |
+|---|---|---|---|
+| Shortest Path Maze | Dijkstra's | Greedy | O((V + E) log V) |
+| Knapsack Ops | 0/1 Knapsack | Dynamic Programming | O(n × W) |
+| Sorting Warriors | Bubble / Quick Sort | Comparison-based | O(n²) / O(n log n) avg |
+| Prime Network | Prim's MST | Greedy | O(E log V) |
+| Huffman Morse | Huffman Coding | Greedy | O(n log n) |
+| N-Queens Defense | Backtracking | Exhaustive Search | O(n!) |
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Please open an issue before submitting a pull request so we can discuss the proposed change.
+Contributions are welcome — new algorithm modules, improved visualisations, or bug fixes.
 
 ```bash
-# Create a feature branch
-git checkout -b feature/your-feature-name
+# Fork the repo and create a feature branch
+git checkout -b feature/new-algorithm-game
 
 # Commit your changes
-git commit -m "feat: describe your change"
+git commit -m "feat: add Floyd-Warshall all-pairs shortest path game"
 
-# Push and open a PR
-git push origin feature/your-feature-name
+# Push and open a pull request
+git push origin feature/new-algorithm-game
 ```
+
+**Guidelines for new modules:**
+- Add algorithm logic to `src/logic/yourAlgorithm.ts` as a pure TypeScript function — no React imports
+- Add the React visualisation to `src/games/YourGame.tsx`
+- Register the new game in the main menu
 
 ---
 
@@ -259,4 +197,4 @@ MIT — see [LICENSE](./LICENSE) for details.
 
 ---
 
-<p align="center">Built on Ethereum · Deployed on Sepolia testnet · © 2026 TrustChain</p>
+<p align="center">Built with React + TypeScript · Visualising DAA one algorithm at a time</p>
